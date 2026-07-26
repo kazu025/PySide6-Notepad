@@ -1,11 +1,14 @@
 import sys
 from pathlib import Path
-from PySide6.QtCore import QFile
-from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox
 
-class MainWindow:
+from PySide6.QtCore import QEvent, QFile, QObject
+from PySide6.QtUiTools import QUiLoader
+from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
+
+class MainWindow(QObject):
     def __init__(self):
+        super().__init__()
+
         self.current_file: Path | None = None
 
         loader = QUiLoader()
@@ -21,6 +24,13 @@ class MainWindow:
             raise RuntimeError("mainWindow.uiの読み込みに失敗しました")
 
         self.connect_signals()
+
+        # ウインドウの終了イベントを監視する
+        self.window.installEventFilter(self)
+
+        # 起動直後は未変更状態とする。
+        self.window.textEdit.document().setModified(False)
+
         self.update_title()
 
     def connect_signals(self):
@@ -30,12 +40,29 @@ class MainWindow:
         self.window.actionSaveAs.triggered.connect(self.save_file_as)
         self.window.actionExit.triggered.connect(self.window.close)
 
+        # テキストの変更状態が変わったときにタイトルを更新する
+        self.window.textEdit.document().modificationChanged.connect(
+            self.update_title
+        )
+
     def new_file(self):
+        '''新しい文章を作成する'''
+        if not self.confirm_save():
+            return
+        
         self.window.textEdit.clear()
         self.current_file = None
+
+        # clear()のあとに文章を未変更状態にする
+        self.window.textEdit.document().setModified(False)
+
         self.update_title()
 
     def open_file(self):
+        '''テキストファイルを開く'''
+        if not self.confirm_save():
+            return
+        
         file_path, _ = QFileDialog.getOpenFileName(
             self.window,
             "ファイルを開く",
@@ -58,16 +85,20 @@ class MainWindow:
 
         self.window.textEdit.setPlainText(text)
         self.current_file = Path(file_path)
+
+        # 読み込んだ直後は文章を未変更状態
+        self.window.textEdit.document().setModified(False)
+
         self.update_title()
 
-    def save_file(self):
+    def save_file(self) -> bool:
         if self.current_file is None:
-            self.save_file_as()
-            return
+            return self.save_file_as()
 
-        self.write_file(self.current_file)
+        return self.write_file(self.current_file)
 
-    def save_file_as(self):
+    def save_file_as(self) -> bool:
+        """ファイル名を指定して保存する"""
         file_path, _ = QFileDialog.getSaveFileName(
             self.window,
             "名前を付けて保存",
@@ -76,12 +107,19 @@ class MainWindow:
         )
 
         if not file_path:
-            return
+            return False
 
-        self.current_file = Path(file_path)
-        self.write_file(self.current_file)
+        new_file = Path(file_path)
+        if not self.write_file(new_file):
+            return False
+        
+        self.current_file = new_file
+        self.update_title()
 
-    def write_file(self, file_path: Path):
+        return True
+        
+    def write_file(self, file_path: Path) -> bool:
+        """指定されたファイルへテキストを書き込む"""
         text = self.window.textEdit.toPlainText()
 
         try:
@@ -92,17 +130,69 @@ class MainWindow:
                 "保存エラー",
                 f"ファイルを保存できませんでした。\n\n{error}",
             )
-            return
-
+            return False
+        
+        # 保存が成功したので未変更状態に戻す
+        self.window.textEdit.document().setModified(False)
         self.update_title()
 
+        return True
+
+    def confirm_save(self) -> bool:
+        """
+        未保存の変更がある場合に保存確認を行う。
+        戻り値:
+            True:
+                新規作成または終了処理を続行する。
+            False:
+                処理を中止する。
+        """
+        document = self.window.textEdit.document()
+        if not document.isModified():
+            return True
+
+        result = QMessageBox.question(
+            self.window,
+            "保存の確認",
+            "内容が変更されています。\n保存しますか？",
+                QMessageBox.StandardButton.Save
+                | QMessageBox.StandardButton.Discard
+                | QMessageBox.StandardButton.Cancel,
+                QMessageBox.StandardButton.Save
+        )
+
+        if result == QMessageBox.StandardButton.Save:
+            return self.save_file()
+        if result == QMessageBox.StandardButton.Discard:
+            return True
+
+        return False        
+
     def update_title(self):
+        """タイトルバーの文字列を更新する"""
         if self.current_file is None:
             filename = "無題"
         else:
             filename = self.current_file.name
 
-        self.window.setWindowTitle(f"{filename} - PySide6 メモ帳")
+        if self.window.textEdit.document().isModified():
+            modified_mark = "*"
+        else:
+            modified_mark = ""
+
+        self.window.setWindowTitle(f"{modified_mark}{filename} - PySide6 メモ帳")
+
+    def eventFilter(self, watched, event):
+        """ウィンドウ終了時のCloseイベントを処理する。"""
+        if watched is self.window and event.type() == QEvent.Type.Close:
+            if self.confirm_save():
+                event.accept()
+            else:
+                event.ignore()
+
+            return True
+
+        return super().eventFilter(watched, event)
 
     def show(self):
         self.window.show()
@@ -114,7 +204,6 @@ def main():
     main_window.show()
 
     sys.exit(app.exec())
-
 
 if __name__ == "__main__":
     main()
