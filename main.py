@@ -40,6 +40,14 @@ class MainWindow(QObject):
         self.window.actionSaveAs.triggered.connect(self.save_file_as)
         self.window.actionExit.triggered.connect(self.window.close)
 
+        # 編集メニュー
+        self.window.actionUndo.triggered.connect(self.window.textEdit.undo)
+        self.window.actionRedo.triggered.connect(self.window.textEdit.redo)
+        self.window.actionCut.triggered.connect(self.window.textEdit.cut)
+        self.window.actionCopy.triggered.connect(self.window.textEdit.copy)
+        self.window.actionPaste.triggered.connect(self.window.textEdit.paste)
+        self.window.actionSelectAll.triggered.connect(self.window.textEdit.selectAll)
+
         # テキストの変更状態が変わったときにタイトルを更新する
         self.window.textEdit.document().modificationChanged.connect(
             self.update_title
