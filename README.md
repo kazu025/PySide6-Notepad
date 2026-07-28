@@ -6,18 +6,14 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 
 ---
 
-## Version 3.0
+## Version 4.0
 
-編集機能を追加しました。
+検索機能を追加しました。
 
-- Undo（元に戻す）
-- Redo（やり直す）
-- Cut（切り取り）
-- Copy（コピー）
-- Paste（貼り付け）
-- Select All（すべて選択）
-
-ショートカットキーにも対応しています。
+- 検索（Ctrl+F）
+- 次を検索（F3）
+- ラップアラウンド検索
+  （文書の最後まで検索すると、自動的に先頭へ戻って検索を続けます。）
 
 ---
 
@@ -31,12 +27,19 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 - ✅ Undo / Redo
 - ✅ Cut / Copy / Paste
 - ✅ Select All
+- ✅ 検索（Ctrl+F）
+- ✅ 次を検索（F3）
+- ✅ ラップアラウンド検索
 
 ---
 
 ## スクリーンショット
 
-Version 3.0 の実行画面です
+現在の実行画面です。
+
+※ Version 4.0では検索機能（Ctrl+F、F3、ラップアラウンド検索）を追加しましたが、
+メイン画面の構成はVersion 3.0から変更ありません。
+
 ![Main Window](images/mainwindow_ver3.0.png)
 
 ---
@@ -81,6 +84,14 @@ PySide6-Notepad/
 
 ## 学んだこと
 
+### Version 4.0
+
+- QTextEdit.find()
+- QInputDialog
+- 検索機能の実装
+- ラップアラウンド検索
+- QTextCursor
+
 ### Version 3.0
 - QAction
 - triggeredシグナル
@@ -102,10 +113,8 @@ PySide6-Notepad/
 
 ---
 
-## Version 4.0 (予定)
+## Version 5.0 (予定)
 
-- 検索
-- 検索して次へ
 - ステータスバー
 
 ---
@@ -128,6 +137,11 @@ PySide6-Notepad/
 - Cut / Copy / Paste
 - Select All
 - ショートカットキー対応
+
+### Version 4.0
+- 検索（Ctrl+F）
+- 次を検索（F3）
+- ラップアラウンド検索
 
 ---
 ## ライセンス

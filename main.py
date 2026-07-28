@@ -3,13 +3,14 @@ from pathlib import Path
 
 from PySide6.QtCore import QEvent, QFile, QObject
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox, QInputDialog
 
 class MainWindow(QObject):
     def __init__(self):
         super().__init__()
 
         self.current_file: Path | None = None
+        self.search_text = ""
 
         loader = QUiLoader()
         ui_file = QFile("mainWindow.ui")
@@ -47,6 +48,8 @@ class MainWindow(QObject):
         self.window.actionCopy.triggered.connect(self.window.textEdit.copy)
         self.window.actionPaste.triggered.connect(self.window.textEdit.paste)
         self.window.actionSelectAll.triggered.connect(self.window.textEdit.selectAll)
+        self.window.actionFind.triggered.connect(self.search_text_dialog)
+        self.window.actionFindNext.triggered.connect(self.find_next)
 
         # テキストの変更状態が変わったときにタイトルを更新する
         self.window.textEdit.document().modificationChanged.connect(
@@ -204,6 +207,56 @@ class MainWindow(QObject):
 
     def show(self):
         self.window.show()
+
+    def search_text_dialog(self) -> None:
+        text, ok = QInputDialog.getText(
+            self.window,
+            "検索",
+            "検索する文字を入力してください"
+        )
+
+        if not ok or not text:
+            return
+
+        self.search_text = text
+
+        cursor = self.window.textEdit.textCursor()
+        cursor.movePosition(cursor.MoveOperation.Start)
+        self.window.textEdit.setTextCursor(cursor)
+
+        self.find_next()
+
+    def find_next(self) -> None:
+        if not self.search_text:
+            self.search_text_dialog()
+            return
+
+        found = self.window.textEdit.find(self.search_text)
+
+        if found:
+            return
+
+        # 文書の先頭へ戻る
+        cursor = self.window.textEdit.textCursor()
+        cursor.movePosition(cursor.MoveOperation.Start)
+        self.window.textEdit.setTextCursor(cursor)
+
+        # もう一度検索
+        found = self.window.textEdit.find(self.search_text)
+
+        if found:
+            QMessageBox.information(
+                self.window,
+                "検索",
+                "文書の最後まで検索しました。\n先頭から検索します。"
+            )
+        else:
+            QMessageBox.information(
+                self.window,
+                "検索",
+                f"「{self.search_text}」は見つかりませんでした"
+            )
+
 
 def main():
     app = QApplication(sys.argv)
