@@ -26,6 +26,8 @@ class MainWindow(QObject):
 
         self.connect_signals()
 
+        self.window.statusBar().showMessage("準備完了")
+
         # ウインドウの終了イベントを監視する
         self.window.installEventFilter(self)
 
@@ -33,6 +35,7 @@ class MainWindow(QObject):
         self.window.textEdit.document().setModified(False)
 
         self.update_title()
+        self.update_status_bar()
 
     def connect_signals(self):
         self.window.actionNew.triggered.connect(self.new_file)
@@ -50,6 +53,9 @@ class MainWindow(QObject):
         self.window.actionSelectAll.triggered.connect(self.window.textEdit.selectAll)
         self.window.actionFind.triggered.connect(self.search_text_dialog)
         self.window.actionFindNext.triggered.connect(self.find_next)
+
+        self.window.textEdit.cursorPositionChanged.connect(self.update_status_bar)
+        self.window.textEdit.textChanged.connect(self.update_status_bar)
 
         # テキストの変更状態が変わったときにタイトルを更新する
         self.window.textEdit.document().modificationChanged.connect(
@@ -257,6 +263,13 @@ class MainWindow(QObject):
                 f"「{self.search_text}」は見つかりませんでした"
             )
 
+    def update_status_bar(self):
+        cursor = self.window.textEdit.textCursor()
+        line = cursor.blockNumber() + 1
+        column = cursor.positionInBlock() + 1
+        character_count = len(self.window.textEdit.toPlainText())
+
+        self.window.statusBar().showMessage(f"Ln {line}, Col {column} | 文字数: {character_count}")
 
 def main():
     app = QApplication(sys.argv)

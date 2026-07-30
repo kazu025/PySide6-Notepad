@@ -6,14 +6,15 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 
 ---
 
-## Version 4.0
+## Version 5.0
 
-検索機能を追加しました。
+ステータスバーを追加しました。
 
-- 検索（Ctrl+F）
-- 次を検索（F3）
-- ラップアラウンド検索
-  （文書の最後まで検索すると、自動的に先頭へ戻って検索を続けます。）
+カーソル位置や文字数をリアルタイムに表示します。
+
+- 行番号（Line）
+- 列番号（Column）
+- 文字数表示
 
 ---
 
@@ -30,17 +31,17 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 - ✅ 検索（Ctrl+F）
 - ✅ 次を検索（F3）
 - ✅ ラップアラウンド検索
+- ✅ 行番号表示
+- ✅ 列番号表示
+- ✅ 文字数表示
 
 ---
 
 ## スクリーンショット
 
-現在の実行画面です。
+Version 5.0 の実行画面です。
 
-※ Version 4.0では検索機能（Ctrl+F、F3、ラップアラウンド検索）を追加しましたが、
-メイン画面の構成はVersion 3.0から変更ありません。
-
-![Main Window](images/mainwindow_ver3.0.png)
+![Main Window](images/mainwindow_ver5.0.png)
 
 ---
 
@@ -84,6 +85,17 @@ PySide6-Notepad/
 
 ## 学んだこと
 
+### Version 5.0
+
+- QStatusBar
+- QStatusBar.showMessage()
+- cursorPositionChangedシグナル
+- textChangedシグナル
+- QTextCursor
+- blockNumber()
+- positionInBlock()
+- ステータスバーの更新
+
 ### Version 4.0
 
 - QTextEdit.find()
@@ -113,9 +125,9 @@ PySide6-Notepad/
 
 ---
 
-## Version 5.0 (予定)
+## Version 6.0 (予定)
 
-- ステータスバー
+- フォント変更
 
 ---
 
@@ -143,7 +155,15 @@ PySide6-Notepad/
 - 次を検索（F3）
 - ラップアラウンド検索
 
+### Version 5.0
+
+- ステータスバー
+- 行番号表示（Line）
+- 列番号表示（Column）
+- 文字数表示
+  
 ---
+
 ## ライセンス
 
 MIT License
