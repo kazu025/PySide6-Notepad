@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QEvent, QFile, QObject
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox, QInputDialog
+from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox, QInputDialog, QFontDialog
 
 class MainWindow(QObject):
     def __init__(self):
@@ -56,6 +56,9 @@ class MainWindow(QObject):
 
         self.window.textEdit.cursorPositionChanged.connect(self.update_status_bar)
         self.window.textEdit.textChanged.connect(self.update_status_bar)
+
+        # 書式メニュー
+        self.window.actionFont.triggered.connect(self.change_font)
 
         # テキストの変更状態が変わったときにタイトルを更新する
         self.window.textEdit.document().modificationChanged.connect(
@@ -269,7 +272,23 @@ class MainWindow(QObject):
         column = cursor.positionInBlock() + 1
         character_count = len(self.window.textEdit.toPlainText())
 
-        self.window.statusBar().showMessage(f"Ln {line}, Col {column} | 文字数: {character_count}")
+        font = self.window.textEdit.font()
+        font_family = font.family()
+        font_size = font.pointSize()
+
+        self.window.statusBar().showMessage(f"Ln {line}, Col {column} | 文字数: {character_count} | {font_family} {font_size}pt")
+
+    def change_font(self) -> None:
+        """テキストエディタのフォントを変更する"""
+        current_font = self.window.textEdit.font()
+
+        ok, selected_font = QFontDialog.getFont(current_font, self.window, "フォントの選択")
+        if not ok:
+            return
+
+        self.window.textEdit.setFont(selected_font)
+        self.update_status_bar()
+        
 
 def main():
     app = QApplication(sys.argv)

@@ -60,8 +60,15 @@
     <addaction name="actionFind"/>
     <addaction name="actionFindNext"/>
    </widget>
+   <widget class="QMenu" name="menu_3">
+    <property name="title">
+     <string>書式</string>
+    </property>
+    <addaction name="actionFont"/>
+   </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
+   <addaction name="menu_3"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionNew">
@@ -154,6 +161,11 @@
    </property>
    <property name="shortcut">
     <string>F3</string>
+   </property>
+  </action>
+  <action name="actionFont">
+   <property name="text">
+    <string>フォント...</string>
    </property>
   </action>
  </widget>
