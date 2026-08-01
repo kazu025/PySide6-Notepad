@@ -1,9 +1,10 @@
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QEvent, QFile, QObject
+from PySide6.QtCore import QEvent, QFile, QObject, QSettings
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox, QInputDialog, QFontDialog
+from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox, QInputDialog, QFontDialog, QMenu
+from PySide6.QtGui import QAction
 
 class MainWindow(QObject):
     def __init__(self):
@@ -24,7 +25,16 @@ class MainWindow(QObject):
         if self.window is None:
             raise RuntimeError("mainWindow.uiの読み込みに失敗しました")
 
+        self.recent_files_menu = QMenu("最近使ったファイル", self.window)
+        self.window.menu.addMenu(self.recent_files_menu)
+
+        self.settings = QSettings("kazu025", "PySide6-Notepad",)
+
+        self.max_recent_files = 5
+        self.recent_files = self.load_recent_files()
+
         self.connect_signals()
+        self.update_recent_files_menu()
 
         self.window.statusBar().showMessage("準備完了")
 
@@ -78,39 +88,6 @@ class MainWindow(QObject):
 
         self.update_title()
 
-    def open_file(self):
-        '''テキストファイルを開く'''
-        if not self.confirm_save():
-            return
-        
-        file_path, _ = QFileDialog.getOpenFileName(
-            self.window,
-            "ファイルを開く",
-            "",
-            "テキストファイル (*.txt);;すべてのファイル (*)",
-        )
-
-        if not file_path:
-            return
-
-        try:
-            text = Path(file_path).read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError) as error:
-            QMessageBox.critical(
-                self.window,
-                "読み込みエラー",
-                f"ファイルを読み込めませんでした。\n\n{error}",
-            )
-            return
-
-        self.window.textEdit.setPlainText(text)
-        self.current_file = Path(file_path)
-
-        # 読み込んだ直後は文章を未変更状態
-        self.window.textEdit.document().setModified(False)
-
-        self.update_title()
-
     def save_file(self) -> bool:
         if self.current_file is None:
             return self.save_file_as()
@@ -135,6 +112,7 @@ class MainWindow(QObject):
         
         self.current_file = new_file
         self.update_title()
+        self.add_recent_file(new_file)
 
         return True
         
@@ -288,7 +266,120 @@ class MainWindow(QObject):
 
         self.window.textEdit.setFont(selected_font)
         self.update_status_bar()
-        
+
+    def load_recent_files(self) -> list[str]:
+        """保存されている最近使ったファイル一覧を読み込む"""
+        recent_files = self.settings.value("recentFiles", [])
+
+        if isinstance(recent_files, str):
+            return [recent_files]
+
+        return list(recent_files)
+
+    def add_recent_file(self, file_path: Path) -> None:
+        """指定されたファイルを最近使ったファイル一覧へ追加する"""
+        path_string = str(file_path.resolve())
+        if path_string in self.recent_files:
+            self.recent_files.remove(path_string)
+
+        self.recent_files.insert(0, path_string)
+        self.recent_files = self.recent_files[:self.max_recent_files]
+
+        self.settings.setValue("recentFiles", self.recent_files)
+        self.update_recent_files_menu()
+
+    def update_recent_files_menu(self) -> None:
+        """最近使ったファイルメニューを再構築する"""
+        menu = self.recent_files_menu
+        menu.clear()
+
+        if not self.recent_files:
+            action = QAction("履歴はありません", self.window)
+            action.setEnabled(False)
+            menu.addAction(action)
+            return
+
+        for index, file_path in enumerate(self.recent_files, start=1):
+            action = QAction(
+                f"{index}. {file_path}",
+                self.window,
+            )
+            # file_pathを保持してクリック時に開く
+            action.triggered.connect(
+                lambda checked=False, path=file_path:
+                  self.open_recent_file(path)
+            )
+
+            menu.addAction(action)
+
+        menu.addSeparator()
+        clear_action = QAction("履歴をクリア", self.window)
+        clear_action.triggered.connect(self.clear_recent_files)
+        menu.addAction(clear_action)
+
+    def clear_recent_files(self) -> None:
+        """最近使ったファイル一覧をクリアする"""
+        result = QMessageBox.question(
+            self.window,
+            "履歴のクリア",
+            "最近使ったファイル一覧をクリアしますか？",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+        if result == QMessageBox.StandardButton.Yes:
+            self.recent_files.clear()
+            self.settings.remove("recentFiles")
+            self.update_recent_files_menu()
+
+    def open_recent_file(self, file_path: str) -> None:
+        """最近使ったファイル一覧からファイルを開く"""
+        if not self.confirm_save():
+            return 
+
+        path = Path(file_path)
+
+        if not path.exists():
+            QMessageBox.warning(self.window, "ファイルは見つかりません", f"次のファイルは存在しません。\n\n{path}",)
+
+            self.recent_files.remove(file_path)
+            self.settings.setValue("recentFiles", self.recent_files,)
+            self.update_recent_files_menu()
+            return
+
+        self.load_file(path)
+
+    def open_file(self) -> None:
+        """ファイル選択ダイアログからテキストファイルを開く"""
+        if not self.confirm_save():
+            return
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self.window,
+            "ファイルを開く",
+            "",
+            "テキストファイル (*.txt);;すべてのファイル (*)",
+        )
+
+        if not file_path:
+            return
+
+        self.load_file(Path(file_path))
+
+    def load_file(self, file_path: Path) -> bool:
+        """指定されたテキストファイルを読み込む"""
+        try:
+            text = file_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError) as error:
+            QMessageBox.critical(self.window, "読み込みエラー", f"ファイルを読み込めませんでした。\n\n{error}")
+            return False
+
+        self.window.textEdit.setPlainText(text)
+        self.current_file = file_path
+        self.window.textEdit.document().setModified(False)
+        self.update_title()
+        self.add_recent_file(file_path)
+        return True
+
 
 def main():
     app = QApplication(sys.argv)
