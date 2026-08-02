@@ -4,7 +4,7 @@ from pathlib import Path
 from PySide6.QtCore import QEvent, QFile, QObject, QSettings
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox, QInputDialog, QFontDialog, QMenu
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QActionGroup
 
 class MainWindow(QObject):
     def __init__(self):
@@ -13,6 +13,9 @@ class MainWindow(QObject):
         self.current_file: Path | None = None
         self.search_text = ""
 
+        self.current_encoding = "utf-8"
+
+        # --- UIのロード ---
         loader = QUiLoader()
         ui_file = QFile("mainWindow.ui")
 
@@ -21,10 +24,18 @@ class MainWindow(QObject):
 
         self.window = loader.load(ui_file)
         ui_file.close()
-
+        
         if self.window is None:
             raise RuntimeError("mainWindow.uiの読み込みに失敗しました")
-
+        # --- UIのロード ---
+        # --- アクションのグループ化 ---
+        self.encode_action_group = QActionGroup(self.window)
+        self.encode_action_group.addAction(self.window.actionEncodingUtf8)
+        self.encode_action_group.addAction(self.window.actionEncodingShiftJis)
+        self.window.actionEncodingUtf8.setChecked(True)
+        self.encode_action_group.setExclusive(True) # グループ内のActionは同時に１つしか選択できないようにする
+        # --- アクションのグループ化 ---
+        # --- 最近使ったファイルメニューの作成 ---
         self.recent_files_menu = QMenu("最近使ったファイル", self.window)
         self.window.menu.addMenu(self.recent_files_menu)
 
@@ -32,6 +43,7 @@ class MainWindow(QObject):
 
         self.max_recent_files = 5
         self.recent_files = self.load_recent_files()
+        # --- 最近使ったファイルメニューの作成 ---
 
         self.connect_signals()
         self.update_recent_files_menu()
@@ -69,6 +81,10 @@ class MainWindow(QObject):
 
         # 書式メニュー
         self.window.actionFont.triggered.connect(self.change_font)
+
+        # エンコードメニュー
+        self.window.actionEncodingUtf8.triggered.connect(self.set_encoding_utf8)
+        self.window.actionEncodingShiftJis.triggered.connect(self.set_encoding_shift_jis)
 
         # テキストの変更状態が変わったときにタイトルを更新する
         self.window.textEdit.document().modificationChanged.connect(
@@ -121,7 +137,14 @@ class MainWindow(QObject):
         text = self.window.textEdit.toPlainText()
 
         try:
-            file_path.write_text(text, encoding="utf-8")
+            file_path.write_text(text, encoding=self.current_encoding)
+        except UnicodeEncodeError as error:
+            QMessageBox.critical(
+                self.window,
+                "文字コードエラー",
+                f"{self.current_encoding} では保存できない文字が含まれています。\n\n{error}",
+            )
+            return False
         except OSError as error:
             QMessageBox.critical(
                 self.window,
@@ -254,7 +277,9 @@ class MainWindow(QObject):
         font_family = font.family()
         font_size = font.pointSize()
 
-        self.window.statusBar().showMessage(f"Ln {line}, Col {column} | 文字数: {character_count} | {font_family} {font_size}pt")
+        encoding_display_name = self.get_encoding_display_name()
+
+        self.window.statusBar().showMessage(f"Ln {line}, Col {column} | 文字数: {character_count} | {font_family} {font_size}pt | {encoding_display_name}")
 
     def change_font(self) -> None:
         """テキストエディタのフォントを変更する"""
@@ -368,8 +393,11 @@ class MainWindow(QObject):
     def load_file(self, file_path: Path) -> bool:
         """指定されたテキストファイルを読み込む"""
         try:
-            text = file_path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError) as error:
+            text = file_path.read_text(encoding=self.current_encoding)
+        except UnicodeDecodeError as error:
+            QMessageBox.critical(self.window, "文字コードエラー", f"{self.current_encoding} では読み込めない文字が含まれています。\n\n 文字コードを変更して、もう一度開いてください。{error}")
+            return False
+        except OSError as error:
             QMessageBox.critical(self.window, "読み込みエラー", f"ファイルを読み込めませんでした。\n\n{error}")
             return False
 
@@ -380,6 +408,22 @@ class MainWindow(QObject):
         self.add_recent_file(file_path)
         return True
 
+    def set_encoding_utf8(self) -> None:
+        """エンコードをUTF-8に設定する"""
+        self.current_encoding = "utf-8"
+        self.update_status_bar()
+
+    def set_encoding_shift_jis(self) -> None:
+        """エンコードをShift_JISに設定する"""
+        self.current_encoding = "shift_jis"
+        self.update_status_bar()
+
+    def get_encoding_display_name(self) -> str:
+        """表示用の文字コード名を取得する"""
+        if self.current_encoding == "utf-8":
+            return "UTF-8"
+
+        return "Shift_JIS"
 
 def main():
     app = QApplication(sys.argv)

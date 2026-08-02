@@ -6,21 +6,21 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 
 ---
 
-## Version 7.0
+## Version 8.0
 
-最近使ったファイル（MRU）機能を追加しました。
+文字コード（UTF-8 / Shift_JIS）の選択機能を追加しました。
 
-QSettingsを利用してファイル履歴を保存し、
-アプリを再起動しても履歴を保持します。
+ファイルを開くとき・保存するときに使用する文字コードをメニューから選択できます。
 
 ### 追加した機能
 
-- 最近使ったファイル（MRU）
-- 最近使ったファイルの履歴保存
-- アプリ再起動後も履歴を保持
-- 履歴からファイルを開く
-- 履歴をクリア
-- 存在しないファイルを自動的に履歴から削除
+* UTF-8 / Shift_JIS の文字コード選択
+* QActionGroupによる文字コードの排他的選択
+* 選択した文字コードでファイルを読み込み
+* 選択した文字コードでファイルを保存
+* ステータスバーに現在の文字コードを表示
+* UnicodeDecodeErrorによる読み込みエラー処理
+* UnicodeEncodeErrorによる保存エラー処理
 
 ---
 
@@ -46,7 +46,17 @@ QSettingsを利用してファイル履歴を保存し、
 - ✅ 履歴の保存
 - ✅ 履歴からファイルを開く
 - ✅ 履歴をクリア
-  
+- ✅ UTF-8 / Shift_JIS の文字コード選択
+- ✅ 文字コード指定による読み込み・保存  
+
+---
+
+## スクリーンショット
+
+現在の実行画面です。
+
+![Main Window](images/mainwindow_ver8.0.png)
+
 ---
 
 ## 開発環境
@@ -89,6 +99,17 @@ PySide6-Notepad/
 
 ## 学んだこと
 
+### Version 8.0
+
+- Pythonの文字コード（encoding）
+- UTF-8 / Shift_JIS
+- QActionGroup
+- QActionのcheckable
+- 排他的なAction選択
+- UnicodeEncodeError
+- UnicodeDecodeError
+- Pythonのstrとファイルエンコーディングの関係
+
 ### Version 7.0
 
 - QSettings
@@ -128,6 +149,7 @@ PySide6-Notepad/
 - QTextCursor
 
 ### Version 3.0
+
 - QAction
 - triggeredシグナル
 - QTextEdit標準編集機能
@@ -145,12 +167,6 @@ PySide6-Notepad/
 * modificationChangedシグナル
 * eventFilter()による終了イベントの処理
 * Pythonの型ヒント（Type Hint）
-
----
-
-## Version 8.0（予定）
-
-- 文字コード（UTF-8 / Shift_JIS）の選択
 
 ---
 
@@ -179,25 +195,29 @@ PySide6-Notepad/
 - ラップアラウンド検索
 
 ### Version 5.0
-
 - ステータスバー
 - 行番号表示（Line）
 - 列番号表示（Column）
 - 文字数表示
-  
-### Version 6.0
 
+### Version 6.0
 - フォント選択ダイアログ
 - フォントファミリ変更
 - フォントサイズ変更
   
 ### Version 7.0
-
 - 最近使ったファイル（MRU）
 - 履歴の保存
 - 履歴からファイルを開く
 - 履歴をクリア
 - 存在しないファイルの自動削除
+
+### Version 8.0
+- UTF-8 / Shift_JIS の文字コード選択
+- QActionGroupによる排他的選択
+- 選択した文字コードで読み込み・保存
+- ステータスバーに文字コードを表示
+- UnicodeDecodeError / UnicodeEncodeError のエラー処理
 
 ## Linux環境での注意
 
