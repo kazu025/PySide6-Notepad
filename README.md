@@ -6,21 +6,25 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 
 ---
 
-## Version 8.0
+## Version 9.0
 
-文字コード（UTF-8 / Shift_JIS）の選択機能を追加しました。
+ウィンドウサイズ・位置の保存と復元に対応しました。
 
-ファイルを開くとき・保存するときに使用する文字コードをメニューから選択できます。
+アプリ終了時のウィンドウ状態をQSettingsに保存し、
+次回起動時に前回と同じ位置・サイズで復元します。
+
+また、Qt Designerでレイアウトを設定し、
+ウィンドウサイズの変更に合わせてテキスト編集領域も自動的に拡大・縮小するようにしました。
 
 ### 追加した機能
 
-* UTF-8 / Shift_JIS の文字コード選択
-* QActionGroupによる文字コードの排他的選択
-* 選択した文字コードでファイルを読み込み
-* 選択した文字コードでファイルを保存
-* ステータスバーに現在の文字コードを表示
-* UnicodeDecodeErrorによる読み込みエラー処理
-* UnicodeEncodeErrorによる保存エラー処理
+* ウィンドウサイズの変更
+* QTextEditの自動リサイズ
+* ウィンドウ位置・サイズの保存
+* アプリ再起動時のウィンドウ状態復元
+* QVBoxLayoutによるレイアウト管理
+* QSettingsによるウィンドウ状態の永続化
+
 
 ---
 
@@ -48,6 +52,9 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 - ✅ 履歴をクリア
 - ✅ UTF-8 / Shift_JIS の文字コード選択
 - ✅ 文字コード指定による読み込み・保存  
+- ✅ ウィンドウサイズ変更
+- ✅ テキスト編集領域の自動リサイズ
+- ✅ ウィンドウ位置・サイズの保存と復元
 
 ---
 
@@ -55,7 +62,7 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 
 現在の実行画面です。
 
-![Main Window](images/mainwindow_ver8.0.png)
+![Main Window](images/mainwindow_ver9.0.png)
 
 ---
 
@@ -98,6 +105,16 @@ PySide6-Notepad/
 ---
 
 ## 学んだこと
+
+### Version 9.0
+
+- Qt DesignerのLayout
+- QVBoxLayout
+- QWidget.saveGeometry()
+- QWidget.restoreGeometry()
+- QSettingsによるウィンドウ状態の保存
+- eventFilter()での終了イベント処理
+- GUI部品の自動リサイズ
 
 ### Version 8.0
 
@@ -218,6 +235,12 @@ PySide6-Notepad/
 - 選択した文字コードで読み込み・保存
 - ステータスバーに文字コードを表示
 - UnicodeDecodeError / UnicodeEncodeError のエラー処理
+
+### Version 9.0
+- ウィンドウサイズ変更
+- QTextEditの自動リサイズ
+- ウィンドウ位置・サイズの保存
+- アプリ起動時のウィンドウ状態復元
 
 ## Linux環境での注意
 

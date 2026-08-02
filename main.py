@@ -34,12 +34,17 @@ class MainWindow(QObject):
         self.encode_action_group.addAction(self.window.actionEncodingShiftJis)
         self.window.actionEncodingUtf8.setChecked(True)
         self.encode_action_group.setExclusive(True) # グループ内のActionは同時に１つしか選択できないようにする
-        # --- アクションのグループ化 ---
+
         # --- 最近使ったファイルメニューの作成 ---
         self.recent_files_menu = QMenu("最近使ったファイル", self.window)
         self.window.menu.addMenu(self.recent_files_menu)
 
         self.settings = QSettings("kazu025", "PySide6-Notepad",)
+
+        # --- ウィンドウ設定の保存 ---
+        geometry = self.settings.value("WindowGeometry")
+        if geometry is not None:
+            self.window.restoreGeometry(geometry)
 
         self.max_recent_files = 5
         self.recent_files = self.load_recent_files()
@@ -207,13 +212,15 @@ class MainWindow(QObject):
         """ウィンドウ終了時のCloseイベントを処理する。"""
         if watched is self.window and event.type() == QEvent.Type.Close:
             if self.confirm_save():
+                # --- ウィンドウの位置とサイズを保存する ---
+                self.settings.setValue("WindowGeometry", self.window.saveGeometry())
                 event.accept()
             else:
                 event.ignore()
 
             return True
 
-        return super().eventFilter(watched, event)
+        return False
 
     def show(self):
         self.window.show()
