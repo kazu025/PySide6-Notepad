@@ -3,7 +3,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QEvent, QFile, QObject, QSettings
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox, QInputDialog, QFontDialog, QMenu
+from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox, QInputDialog, QFontDialog, QMenu, QTextEdit
 from PySide6.QtGui import QAction, QActionGroup
 
 class MainWindow(QObject):
@@ -40,6 +40,11 @@ class MainWindow(QObject):
         self.window.menu.addMenu(self.recent_files_menu)
 
         self.settings = QSettings("kazu025", "PySide6-Notepad",)
+
+        word_wrap = self.settings.value("WordWrap", True, type=bool)
+        self.window.actionWordWrap.setChecked(word_wrap)
+        self.apply_word_wrap(word_wrap)
+
 
         # --- ウィンドウ設定の保存 ---
         geometry = self.settings.value("WindowGeometry")
@@ -90,6 +95,9 @@ class MainWindow(QObject):
         # エンコードメニュー
         self.window.actionEncodingUtf8.triggered.connect(self.set_encoding_utf8)
         self.window.actionEncodingShiftJis.triggered.connect(self.set_encoding_shift_jis)
+
+        # 表示メニュー
+        self.window.actionWordWrap.triggered.connect(self.toggle_word_wrap)
 
         # テキストの変更状態が変わったときにタイトルを更新する
         self.window.textEdit.document().modificationChanged.connect(
@@ -431,6 +439,18 @@ class MainWindow(QObject):
             return "UTF-8"
 
         return "Shift_JIS"
+
+    def toggle_word_wrap(self, checked: bool) -> None:
+        """テキストの折返し表示を切り替える"""
+        self.apply_word_wrap(checked)
+        self.settings.setValue("WordWrap", checked)
+        
+    def apply_word_wrap(self, checked: bool) -> None:
+        if checked:
+            self.window.textEdit.setLineWrapMode(QTextEdit.LineWrapMode.WidgetWidth)
+        else:
+            self.window.textEdit.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
+
 
 def main():
     app = QApplication(sys.argv)
