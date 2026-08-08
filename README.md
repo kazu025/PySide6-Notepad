@@ -6,26 +6,29 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 
 ---
 
-## Version 13.0
+## Version 14.0
 
-指定した行番号へカーソルを移動する「指定行へ移動」機能を追加しました。
+テキストの置換機能を追加しました。
 
-編集メニューまたは `Ctrl+G` から行番号入力ダイアログを開き、
-入力した行の先頭へカーソルを移動できます。
+編集メニューまたは `Ctrl+H` から置換処理を開始し、
+検索する文字列と置換後の文字列を順番に入力すると、
+文書内の一致する文字列をすべて置換できます。
 
-入力可能な行番号は文書の1行目から最終行までに制限され、
-ダイアログには現在のカーソル行が初期値として表示されます。
+対象文字列が見つからない場合はメッセージを表示し、
+置換後は文書を変更済み状態にしてタイトルバーへ `*` を表示します。
 
 ### 追加した機能
 
-* 指定した行番号へのカーソル移動
-* `Ctrl+G` ショートカット
-* `QInputDialog.getInt()` による行番号入力
-* `QTextDocument.blockCount()` による総行数取得
-* `QTextCursor.blockNumber()` による現在行取得
-* `QTextDocument.findBlockByNumber()` による対象行検索
-* `QTextBlock.position()` による行先頭位置取得
-* `QTextEdit.ensureCursorVisible()` による移動先の表示
+* テキストの一括置換
+* `Ctrl+H` ショートカット
+* `QInputDialog.getText()` による検索文字列入力
+* `QInputDialog.getText()` による置換文字列入力
+* `str.count()` による置換対象件数の取得
+* `str.replace()` による全文置換
+* 対象文字列が存在しない場合のメッセージ表示
+* 空文字への置換による文字列削除
+* 置換件数の表示
+* `QTextDocument.setModified(True)` による変更状態の反映
 
 ---
 
@@ -67,6 +70,9 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 * ✅ 指定行へ移動（Ctrl+G）
 * ✅ 現在行を初期値とした行番号入力
 * ✅ 文書範囲内へのカーソル移動
+* ✅ テキストの一括置換（Ctrl+H）
+* ✅ 置換対象件数の表示
+* ✅ 置換後の未保存状態（*）管理
 
 ---
 
@@ -74,7 +80,7 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 
 現在の実行画面です。
 
-![Main Window](images/mainwindow_ver13.0.png)
+![Main Window](images/mainwindow_ver14.0.png)
 
 ---
 
@@ -117,6 +123,18 @@ PySide6-Notepad/
 ---
 
 ## 学んだこと
+
+### Version 14.0
+
+* `QInputDialog.getText()` を利用した置換文字列の入力
+* Python文字列の `str.count()`
+* Python文字列の `str.replace()`
+* `QTextEdit.toPlainText()` による全文取得
+* `QTextEdit.setPlainText()` による全文更新
+* `QTextDocument.setModified(True)` による変更状態の明示
+* `modificationChanged` シグナルとタイトルバー更新の関係
+* 画面上のテキスト変更とQTextDocumentの変更状態は別に管理されること
+* 既存の未保存変更管理との連携
 
 ### Version 13.0
 
@@ -346,6 +364,17 @@ PySide6-Notepad/
 * 現在行を初期値として表示
 * 1行目から最終行までの入力範囲制限
 * 指定行の先頭へカーソル移動
+
+### Version 14.0
+
+* テキストの一括置換
+* `Ctrl+H` ショートカット
+* 検索文字列と置換文字列の入力
+* `str.count()` による置換件数の取得
+* `str.replace()` による全文置換
+* 対象文字列が存在しない場合のメッセージ表示
+* 空文字への置換による文字列削除
+* 置換後の変更状態をタイトルバーの `*` に反映
 
 ---
 

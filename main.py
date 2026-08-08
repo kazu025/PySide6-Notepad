@@ -94,6 +94,7 @@ class MainWindow(QObject):
         self.window.actionSelectAll.triggered.connect(self.window.textEdit.selectAll)
         self.window.actionFind.triggered.connect(self.search_text_dialog)
         self.window.actionFindNext.triggered.connect(self.find_next)
+        self.window.actionReplace.triggered.connect(self.replace_text_dialog)
         self.window.actionGoToLine.triggered.connect(self.go_to_line)
 
         self.window.textEdit.cursorPositionChanged.connect(self.update_status_bar)
@@ -570,6 +571,53 @@ class MainWindow(QObject):
         cursor.setPosition(block.position())
         self.window.textEdit.setTextCursor(cursor)
         self.window.textEdit.ensureCursorVisible()
+    def replace_text_dialog(self) -> None:
+        """検索文字列と置換文字列を入力して、テキストを置換する"""
+        search_text, ok = QInputDialog.getText(
+            self.window,
+            "置換",
+            "検索する文字:"
+        )
+
+        if not ok or not search_text:
+            return
+
+        replace_text, ok = QInputDialog.getText(
+            self.window,
+            "置換",
+            "置換する文字:"
+        )
+
+        if not ok:
+            return
+
+        self.replace_all(search_text, replace_text)
+
+    def replace_all(self, search_text: str, replace_text: str) -> None:
+        """文書内の対象文字列をすべて置換する"""
+        text = self.window.textEdit.toPlainText()
+
+        count = text.count(search_text)
+
+        if count == 0:
+            QMessageBox.information(
+                self.window,
+                "置換",
+                f"「{search_text}」は見つかりませんでした。"
+            )
+            return
+
+        new_text = text.replace(search_text, replace_text)
+
+        self.window.textEdit.setPlainText(new_text)
+        # 置換したので文書を変更済みにする
+        self.window.textEdit.document().setModified(True)
+
+        QMessageBox.information(
+            self.window,
+            "置換",
+            f"{count}件置換しました。"
+        )
 
 def main():
     app = QApplication(sys.argv)
