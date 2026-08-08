@@ -75,6 +75,10 @@
      <string>表示</string>
     </property>
     <addaction name="actionWordWrap"/>
+    <addaction name="separator"/>
+    <addaction name="actionZoomIn"/>
+    <addaction name="actionZoomOut"/>
+    <addaction name="actionZoomReset"/>
    </widget>
    <addaction name="menu"/>
    <addaction name="menu_2"/>
@@ -210,6 +214,30 @@
    </property>
    <property name="text">
     <string>折り返し</string>
+   </property>
+  </action>
+  <action name="actionZoomIn">
+   <property name="text">
+    <string>拡大</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+;</string>
+   </property>
+  </action>
+  <action name="actionZoomOut">
+   <property name="text">
+    <string>縮小</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionZoomReset">
+   <property name="text">
+    <string> 100%に戻す</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+0</string>
    </property>
   </action>
  </widget>

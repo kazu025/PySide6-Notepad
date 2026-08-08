@@ -15,6 +15,7 @@ class MainWindow(QObject):
 
         self.current_encoding = "utf-8"
 
+        self.zoom_level = 0 # 0:基準 +1:一段拡大  -1:縮小
         # --- UIのロード ---
         loader = QUiLoader()
         ui_file = QFile("mainWindow.ui")
@@ -40,6 +41,10 @@ class MainWindow(QObject):
         self.window.menu.addMenu(self.recent_files_menu)
 
         self.settings = QSettings("kazu025", "PySide6-Notepad",)
+
+        save_zoom_level = self.settings.value("ZoomLevel", 0, type=int)
+        self.apply_zoom_level(save_zoom_level)
+        self.zoom_level = save_zoom_level
 
         word_wrap = self.settings.value("WordWrap", True, type=bool)
         self.window.actionWordWrap.setChecked(word_wrap)
@@ -98,6 +103,10 @@ class MainWindow(QObject):
 
         # 表示メニュー
         self.window.actionWordWrap.triggered.connect(self.toggle_word_wrap)
+
+        self.window.actionZoomIn.triggered.connect(self.zoom_in)
+        self.window.actionZoomOut.triggered.connect(self.zoom_out)
+        self.window.actionZoomReset.triggered.connect(self.zoom_reset)
 
         # テキストの変更状態が変わったときにタイトルを更新する
         self.window.textEdit.document().modificationChanged.connect(
@@ -451,6 +460,37 @@ class MainWindow(QObject):
         else:
             self.window.textEdit.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
 
+    def zoom_in(self) -> None:
+        """テキストを拡大する"""
+        self.window.textEdit.zoomIn(1)
+        self.zoom_level += 1
+        self.settings.setValue("ZoomLevel", self.zoom_level)
+        self.update_status_bar()
+
+    def zoom_out(self) -> None:
+        """テキストを縮小する"""
+        self.window.textEdit.zoomOut(1)
+        self.zoom_level -= 1
+        self.settings.setValue("ZoomLevel", self.zoom_level)
+        self.update_status_bar()
+
+    def zoom_reset(self) -> None:
+        """テキストの拡大率をリセットする"""
+        if self.zoom_level > 0:
+            self.window.textEdit.zoomOut(self.zoom_level)
+        elif self.zoom_level < 0:
+            self.window.textEdit.zoomIn(-self.zoom_level)
+        self.zoom_level = 0
+        self.settings.setValue("ZoomLevel", self.zoom_level)
+        self.update_status_bar()
+
+    def apply_zoom_level(self, level: int) -> None:
+        """指定された拡大率を適用する"""
+        if level > 0:
+            self.window.textEdit.zoomIn(level)
+        elif level < 0:
+            self.window.textEdit.zoomOut(-level)
+        self.update_status_bar()
 
 def main():
     app = QApplication(sys.argv)
