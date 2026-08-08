@@ -86,7 +86,7 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 
 ## 開発環境
 
-* Python 3.x
+* Python 3.10+
 * PySide6 6.11.1
 * Qt Designer
 * Linux Mint
@@ -389,4 +389,5 @@ pip版PySide6は独自のQtライブラリを使用するため、
 
 ## ライセンス
 
-MIT License
+このプロジェクトは MIT License のもとで公開しています。
+詳細は [LICENSE](./LICENSE) を参照してください。

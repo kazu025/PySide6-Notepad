@@ -18,7 +18,8 @@ class MainWindow(QObject):
         self.zoom_level = 0 # 0:基準 +1:一段拡大  -1:縮小
         # --- UIのロード ---
         loader = QUiLoader()
-        ui_file = QFile("mainWindow.ui")
+        base_dir = Path(__file__).resolve().parent
+        ui_file = QFile(str(base_dir / "mainWindow.ui"))
 
         if not ui_file.open(QFile.ReadOnly):
             raise RuntimeError("mainWindow.ui を開けません")
@@ -571,6 +572,7 @@ class MainWindow(QObject):
         cursor.setPosition(block.position())
         self.window.textEdit.setTextCursor(cursor)
         self.window.textEdit.ensureCursorVisible()
+
     def replace_text_dialog(self) -> None:
         """検索文字列と置換文字列を入力して、テキストを置換する"""
         search_text, ok = QInputDialog.getText(
@@ -608,10 +610,9 @@ class MainWindow(QObject):
             return
 
         new_text = text.replace(search_text, replace_text)
-
-        self.window.textEdit.setPlainText(new_text)
-        # 置換したので文書を変更済みにする
-        self.window.textEdit.document().setModified(True)
+        cursor = self.window.textEdit.textCursor()
+        cursor.select(cursor.SelectionType.Document)
+        cursor.insertText(new_text)
 
         QMessageBox.information(
             self.window,
