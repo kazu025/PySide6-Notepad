@@ -36,6 +36,10 @@ class MainWindow(QObject):
         self.window.actionEncodingUtf8.setChecked(True)
         self.encode_action_group.setExclusive(True) # グループ内のActionは同時に１つしか選択できないようにする
 
+        # ファイルドラッグ&ドロップを有効にする
+        self.window.setAcceptDrops(True)
+        self.window.textEdit.setAcceptDrops(False) # QTextEditのドロップイベントは無効にする
+
         # --- 最近使ったファイルメニューの作成 ---
         self.recent_files_menu = QMenu("最近使ったファイル", self.window)
         self.window.menu.addMenu(self.recent_files_menu)
@@ -226,16 +230,29 @@ class MainWindow(QObject):
         self.window.setWindowTitle(f"{modified_mark}{filename} - PySide6 メモ帳")
 
     def eventFilter(self, watched, event):
-        """ウィンドウ終了時のCloseイベントを処理する。"""
-        if watched is self.window and event.type() == QEvent.Type.Close:
-            if self.confirm_save():
-                # --- ウィンドウの位置とサイズを保存する ---
-                self.settings.setValue("WindowGeometry", self.window.saveGeometry())
-                event.accept()
-            else:
-                event.ignore()
+        """ウィンドウのイベントを処理する"""
+        if watched is self.window:
+            if event.type() == QEvent.Type.DragEnter:
+                if event.mimeData().hasUrls():
+                    event.acceptProposedAction()
+                else:
+                    event.ignore()
 
-            return True
+                return True
+
+            if event.type() == QEvent.Type.Drop:
+                self.drop_file(event)
+                return True
+
+            if event.type() == QEvent.Type.Close:
+                if self.confirm_save():
+                    # --- ウィンドウの位置とサイズを保存する ---
+                    self.settings.setValue("WindowGeometry", self.window.saveGeometry())
+                    event.accept()
+                else:
+                    event.ignore()
+
+                return True
 
         return False
 
@@ -491,6 +508,34 @@ class MainWindow(QObject):
         elif level < 0:
             self.window.textEdit.zoomOut(-level)
         self.update_status_bar()
+
+    def drop_file(self, event) -> None:
+        """ファイルがドロップされたときの処理"""
+        urls = event.mimeData().urls()
+        if not urls:
+            return
+
+        file_path = urls[0].toLocalFile()
+        if not file_path:
+            return
+
+        path = Path(file_path)
+
+        if not path.is_file():
+            QMessageBox.warning(self.window, "ファイルではありません", f"次のパスはファイルではありません。\n\n{path}")
+            return
+
+        # テキストファイル以外は開かない
+        if path.suffix.lower() != ".txt":
+            QMessageBox.warning(self.window, "ファイル形式エラー", f"次のファイルはテキストファイルではありません。\n\n{path}")
+            return
+
+        if not self.confirm_save():
+            return
+
+        self.load_file(path)
+
+        event.acceptProposedAction()
 
 def main():
     app = QApplication(sys.argv)
