@@ -94,6 +94,7 @@ class MainWindow(QObject):
         self.window.actionSelectAll.triggered.connect(self.window.textEdit.selectAll)
         self.window.actionFind.triggered.connect(self.search_text_dialog)
         self.window.actionFindNext.triggered.connect(self.find_next)
+        self.window.actionGoToLine.triggered.connect(self.go_to_line)
 
         self.window.textEdit.cursorPositionChanged.connect(self.update_status_bar)
         self.window.textEdit.textChanged.connect(self.update_status_bar)
@@ -536,6 +537,39 @@ class MainWindow(QObject):
         self.load_file(path)
 
         event.acceptProposedAction()
+
+    def go_to_line(self) -> None:
+        """指定された行番号へカーソルを移動する"""
+        document = self.window.textEdit.document()
+        max_line = document.blockCount()
+
+        cursor = self.window.textEdit.textCursor()
+        current_line = cursor.blockNumber() + 1
+
+        line_number, ok = QInputDialog.getInt(
+            self.window,
+            "行番号へ移動",
+            "行番号:",
+            current_line,
+            1,
+            max_line,
+            1
+        )
+
+        if not ok:
+            return
+
+        block = document.findBlockByNumber(line_number - 1)
+        if not block.isValid():
+            QMessageBox.warning(
+                self.window,
+                "行番号エラー",
+                f"指定された行番号は存在しません。\n\n有効な範囲: 1 - {max_line}"
+            )
+            return
+        cursor.setPosition(block.position())
+        self.window.textEdit.setTextCursor(cursor)
+        self.window.textEdit.ensureCursorVisible()
 
 def main():
     app = QApplication(sys.argv)

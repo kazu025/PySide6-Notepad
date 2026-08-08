@@ -6,31 +6,26 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 
 ---
 
-## Version 12.0
+## Version 13.0
 
-テキストファイルのドラッグ＆ドロップ読み込みに対応しました。
+指定した行番号へカーソルを移動する「指定行へ移動」機能を追加しました。
 
-ファイルマネージャから `.txt` ファイルをアプリのウィンドウへドラッグ＆ドロップすると、
-ファイル選択ダイアログを使用せずに直接ファイルを開くことができます。
+編集メニューまたは `Ctrl+G` から行番号入力ダイアログを開き、
+入力した行の先頭へカーソルを移動できます。
 
-また、PNGやPDFなどのテキストファイル以外がドロップされた場合は、
-ファイル形式エラーを表示して読み込みを中止します。
-
-編集中の未保存データがある場合は、既存の保存確認処理を行ってから
-ドロップされたファイルを開きます。
+入力可能な行番号は文書の1行目から最終行までに制限され、
+ダイアログには現在のカーソル行が初期値として表示されます。
 
 ### 追加した機能
 
-* テキストファイルのドラッグ＆ドロップ読み込み
-* DragEnterイベントの処理
-* Dropイベントの処理
-* QMimeDataからファイルURLを取得
-* URLからローカルファイルパスへの変換
-* `.txt` ファイルのみを読み込み対象とする拡張子チェック
-* PNG / PDFなど非テキストファイルの読み込み防止
-* ドロップ時の未保存データ確認
-* 既存のload_file()を利用したファイル読み込み
-* ドロップしたファイルの「最近使ったファイル」への追加
+* 指定した行番号へのカーソル移動
+* `Ctrl+G` ショートカット
+* `QInputDialog.getInt()` による行番号入力
+* `QTextDocument.blockCount()` による総行数取得
+* `QTextCursor.blockNumber()` による現在行取得
+* `QTextDocument.findBlockByNumber()` による対象行検索
+* `QTextBlock.position()` による行先頭位置取得
+* `QTextEdit.ensureCursorVisible()` による移動先の表示
 
 ---
 
@@ -69,6 +64,9 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 * ✅ テキストファイルのドラッグ＆ドロップ読み込み
 * ✅ 非テキストファイルのドロップ防止
 * ✅ ドロップ時の未保存データ確認
+* ✅ 指定行へ移動（Ctrl+G）
+* ✅ 現在行を初期値とした行番号入力
+* ✅ 文書範囲内へのカーソル移動
 
 ---
 
@@ -76,7 +74,7 @@ PythonによるGUIアプリケーション開発を学ぶことを目的とし�
 
 現在の実行画面です。
 
-![Main Window](images/mainwindow_ver12.0.png)
+![Main Window](images/mainwindow_ver13.0.png)
 
 ---
 
@@ -119,6 +117,19 @@ PySide6-Notepad/
 ---
 
 ## 学んだこと
+
+### Version 13.0
+
+* QInputDialog.getInt()
+* QTextDocument.blockCount()
+* QTextCursor.blockNumber()
+* QTextDocument.findBlockByNumber()
+* QTextBlock.position()
+* QTextBlock.isValid()
+* QTextCursor.setPosition()
+* QTextEdit.setTextCursor()
+* QTextEdit.ensureCursorVisible()
+* ユーザー向け行番号とQt内部の0始まりblock番号の変換
 
 ### Version 12.0
 
@@ -320,12 +331,21 @@ PySide6-Notepad/
 * アプリ再起動時のズーム状態復元
 
 ### Version 12.0
-テキストファイルのドラッグ＆ドロップ読み込み
-DragEnter / Dropイベントへの対応
-.txt ファイルのみ読み込み可能
-非テキストファイルの読み込み防止
-ドロップ時の未保存データ確認
-ドロップしたファイルのMRUへの追加
+
+* テキストファイルのドラッグ＆ドロップ読み込み
+* DragEnter / Dropイベントへの対応
+* `.txt` ファイルのみ読み込み可能
+* 非テキストファイルの読み込み防止
+* ドロップ時の未保存データ確認
+* ドロップしたファイルのMRUへの追加
+
+### Version 13.0
+
+* 指定行へ移動
+* `Ctrl+G` ショートカット
+* 現在行を初期値として表示
+* 1行目から最終行までの入力範囲制限
+* 指定行の先頭へカーソル移動
 
 ---
 

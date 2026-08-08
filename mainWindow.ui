@@ -63,6 +63,7 @@
     <addaction name="separator"/>
     <addaction name="actionFind"/>
     <addaction name="actionFindNext"/>
+    <addaction name="actionGoToLine"/>
    </widget>
    <widget class="QMenu" name="menu_3">
     <property name="title">
@@ -238,6 +239,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+0</string>
+   </property>
+  </action>
+  <action name="actionGoToLine">
+   <property name="text">
+    <string>指定行へ移動</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
    </property>
   </action>
  </widget>
